@@ -91,4 +91,3 @@ export const getApplicationById = async (req: Request, res: Response): Promise<v
         });
     }
 };
-
