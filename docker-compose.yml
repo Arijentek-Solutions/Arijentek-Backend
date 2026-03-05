@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    container_name: careers_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      # Important: In Docker, the host is the name of the database service ("postgres") 
+      # and the port is the internal container port (5432), not 5433 mapped to your PC.
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/careers_db
+      - JWT_SECRET=careers_super_secret_jwt_key_change_in_production
+      - JWT_EXPIRES_IN=7d
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:15
+    container_name: careers_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: careers_db
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
