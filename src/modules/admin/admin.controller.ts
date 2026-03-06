@@ -44,9 +44,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         );
         res.cookie('token', token, {
             httpOnly: true,
-            secure: env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 7 * 24 * 60 * 60 * 1000 
+            secure: false, // Set to true only if using HTTPS
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
         res.json({ token });
     } catch (error) {
