@@ -3,7 +3,7 @@ import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { s3Client } from '../config/s3';
 import { env } from '../config/env';
-import { v4 as uuidv4 } from 'uuid';
+import crypto from 'crypto';
 import path from 'path';
 
 const storage = multer.memoryStorage();
@@ -30,7 +30,7 @@ export const upload = multer({
  */
 export const uploadToS3 = async (file: Express.Multer.File): Promise<string> => {
     const fileExtension = path.extname(file.originalname);
-    const fileName = `resumes/${uuidv4()}${fileExtension}`;
+    const fileName = `resumes/${crypto.randomUUID()}${fileExtension}`;
 
     const command = new PutObjectCommand({
         Bucket: env.AWS_S3_BUCKET,
