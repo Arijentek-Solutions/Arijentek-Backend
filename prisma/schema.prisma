@@ -48,3 +48,23 @@ enum JobStatus {
   ACTIVE
   INACTIVE
 }
+
+enum BlogStatus {
+  PUBLISHED
+  DRAFT
+}
+
+model Blog {
+  id            String     @id @default(cuid())
+  title         String
+  slug          String     @unique
+  excerpt       String
+  content       String     @db.Text
+  featuredImage String
+  category      String
+  author        String
+  readTime      String
+  status        BlogStatus @default(DRAFT)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+}

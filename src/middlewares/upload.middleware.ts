@@ -14,12 +14,12 @@ export const upload = multer({
         fileSize: 5 * 1024 * 1024, 
     },
     fileFilter: (_req, file, cb) => {
-        const allowedExtensions = ['.pdf', '.doc', '.docx'];
+        const allowedExtensions = ['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png', '.webp'];
         const ext = path.extname(file.originalname).toLowerCase();
         if (allowedExtensions.includes(ext)) {
             cb(null, true);
         } else {
-            cb(new Error('Only .pdf, .doc and .docx files are allowed'));
+            cb(new Error('Invalid file type. Only resumes (.pdf, .doc, .docx) and images (.jpg, .jpeg, .png, .webp) are allowed'));
         }
     },
 });
@@ -31,6 +31,26 @@ export const upload = multer({
 export const uploadToS3 = async (file: Express.Multer.File): Promise<string> => {
     const fileExtension = path.extname(file.originalname);
     const fileName = `resumes/${crypto.randomUUID()}${fileExtension}`;
+
+    const command = new PutObjectCommand({
+        Bucket: env.AWS_S3_BUCKET,
+        Key: fileName,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+    });
+
+    await s3Client.send(command);
+
+    return fileName;
+};
+
+/**
+ * Uploads a blog image to S3.
+ * @returns The S3 Key (file path) for the image.
+ */
+export const uploadBlogImageToS3 = async (file: Express.Multer.File): Promise<string> => {
+    const fileExtension = path.extname(file.originalname);
+    const fileName = `blog-images/${crypto.randomUUID()}${fileExtension}`;
 
     const command = new PutObjectCommand({
         Bucket: env.AWS_S3_BUCKET,

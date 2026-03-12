@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import { adminRoutes } from './modules/admin/admin.routes';
 import { jobRoutes, adminJobRoutes } from './modules/jobs/job.routes';
 import { applicationRoutes } from './modules/applications/application.routes';
+import { blogRoutes, adminBlogRoutes } from './modules/blogs/blog.routes';
 import { notFoundHandler } from './middlewares/notFound.middleware';
 import { errorHandler } from './middlewares/error.middleware';
 
@@ -26,7 +27,9 @@ app.get('/health', (req, res) => {
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/jobs', adminJobRoutes);
+app.use('/api/admin/blogs', adminBlogRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/blogs', blogRoutes);
 app.use('/api/applications', applicationRoutes);
 
 // Error Handling Middlewares
