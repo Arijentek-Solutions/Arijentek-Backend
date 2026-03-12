@@ -13,6 +13,11 @@ export const submitApplication = async (req: Request, res: Response): Promise<vo
 
         const { firstName, lastName, email, phone, linkedIn, portfolio, coverLetter } = req.body;
         
+        if (!firstName || !lastName || !email || !phone) {
+            res.status(400).json({ message: 'firstName, lastName, email, and phone are required fields.' });
+            return;
+        }
+        
         const job = await prisma.job.findUnique({ where: { id: jobId } });
         if (!job) {
             res.status(404).json({ message: 'Job not found' });
@@ -22,7 +27,11 @@ export const submitApplication = async (req: Request, res: Response): Promise<vo
         let resumeUrl = '';
         if (req.file) {
             resumeUrl = await uploadToS3(req.file);
+        } else {
+            res.status(400).json({ message: 'Resume (file) is required.' });
+            return;
         }
+
 
         const application = await prisma.application.create({
             data: { 
