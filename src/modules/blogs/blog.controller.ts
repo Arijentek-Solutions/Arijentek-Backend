@@ -1,14 +1,20 @@
 import { Request, Response } from 'express';
 import { BlogStatus } from '@prisma/client';
 import prisma from '../../config/prisma';
+import { env } from '../../config/env';
 
 import slugify from 'slugify';
+
 import { uploadBlogImageToS3, getPresignedUrl } from '../../middlewares/upload.middleware';
 
 const sanitizeBlog = async (blog: any) => {
     let imageUrl = blog.featuredImage;
     if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:')) {
-        imageUrl = await getPresignedUrl(imageUrl);
+        if (imageUrl.startsWith('blog-images/')) {
+            imageUrl = `https://${env.AWS_S3_BUCKET}.s3.${env.AWS_REGION}.amazonaws.com/${imageUrl}`;
+        } else {
+            imageUrl = await getPresignedUrl(imageUrl);
+        }
     }
     
     return {
@@ -16,6 +22,7 @@ const sanitizeBlog = async (blog: any) => {
         featuredImage: imageUrl
     };
 };
+
 
 export const getBlogs = async (req: Request, res: Response): Promise<void> => {
     try {
