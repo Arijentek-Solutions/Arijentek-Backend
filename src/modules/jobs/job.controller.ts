@@ -11,7 +11,8 @@ const sanitizeJob = (job: any) => ({
     description: job.description,
     qualification: job.qualification,
     responsibilities: job.responsibilities,
-    id: job.id
+    id: job.id,
+    applicationsCount: job._count?.applications ?? 0
 });
 
 export const getJobs = async (_req: Request, res: Response): Promise<void> => {
@@ -29,6 +30,11 @@ export const getJobs = async (_req: Request, res: Response): Promise<void> => {
 export const getAdminJobs = async (_req: Request, res: Response): Promise<void> => {
     try {
         const jobs = await prisma.job.findMany({
+            include: {
+                _count: {
+                    select: { applications: true }
+                }
+            },
             orderBy: { createdAt: 'desc' },
         });
         res.json(jobs.map(sanitizeJob));

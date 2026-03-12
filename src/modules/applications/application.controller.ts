@@ -5,6 +5,12 @@ import { uploadToS3, getPresignedUrl } from '../../middlewares/upload.middleware
 export const submitApplication = async (req: Request, res: Response): Promise<void> => {
     try {
         const jobId = req.params.jobId as string;
+        
+        if (!req.body) {
+            res.status(400).json({ message: 'Request body is missing. Please ensure you are sending as form-data and the file is selected correctly.' });
+            return;
+        }
+
         const { firstName, lastName, email, phone, linkedIn, portfolio, coverLetter } = req.body;
         
         const job = await prisma.job.findUnique({ where: { id: jobId } });
