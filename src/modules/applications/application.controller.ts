@@ -136,3 +136,32 @@ export const getApplicationById = async (req: Request, res: Response): Promise<v
         });
     }
 };
+
+export const deleteApplication = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const id = req.params.id as string;
+        
+        const application = await prisma.application.findUnique({
+            where: { id }
+        });
+
+        if (!application) {
+            res.status(404).json({ message: 'Application not found' });
+            return;
+        }
+
+        await prisma.application.delete({
+            where: { id }
+        });
+
+        res.json({ message: 'Application deleted successfully' });
+    } catch (error) {
+        res.status(500).json({
+            message: 'Server error',
+            error: {
+                name: (error as any).name,
+                message: (error as any).message
+            }
+        });
+    }
+};
