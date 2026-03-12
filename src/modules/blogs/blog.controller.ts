@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import { BlogStatus } from '@prisma/client';
 import prisma from '../../config/prisma';
+
 import slugify from 'slugify';
 import { uploadBlogImageToS3, getPresignedUrl } from '../../middlewares/upload.middleware';
 
@@ -83,14 +85,15 @@ export const createBlog = async (req: Request, res: Response): Promise<void> => 
             data: { 
                 title, 
                 slug, 
-                excerpt, 
-                content, 
+                excerpt: excerpt || '', 
+                content: content || '', 
                 featuredImage, 
-                category, 
-                author, 
-                readTime, 
-                status: status || 'DRAFT' 
+                category: category || 'General', 
+                author: author || 'Admin', 
+                readTime: readTime || '5 min', 
+                status: Object.values(BlogStatus).includes(status as BlogStatus) ? (status as BlogStatus) : BlogStatus.DRAFT
             },
+
         });
         
         res.status(201).json(await sanitizeBlog(blog));
@@ -99,6 +102,7 @@ export const createBlog = async (req: Request, res: Response): Promise<void> => 
         res.status(500).json({ message: 'Server error', error });
     }
 };
+
 
 export const updateBlog = async (req: Request, res: Response): Promise<void> => {
     try {
