@@ -61,11 +61,14 @@ export const getAdminBlogs = async (_req: Request, res: Response): Promise<void>
 
 export const getBlogBySlug = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { slug } = req.params;
+        const isAdmin = req.path.includes('/admin');
+        
         const blog = await prisma.blog.findUnique({
-            where: { slug: req.params.slug as string }
+            where: { slug: slug as string }
         });
         
-        if (!blog) {
+        if (!blog || (!isAdmin && blog.status !== BlogStatus.PUBLISHED)) {
             res.status(404).json({ message: 'Blog not found' });
             return;
         }
@@ -86,6 +89,11 @@ export const createBlog = async (req: Request, res: Response): Promise<void> => 
             featuredImage = await uploadBlogImageToS3(req.file);
         }
 
+        const upperStatus = status ? String(status).toUpperCase() : '';
+        const validStatus = Object.values(BlogStatus).includes(upperStatus as BlogStatus) 
+            ? (upperStatus as BlogStatus) 
+            : BlogStatus.DRAFT;
+
         const slug = slugify(title, { lower: true, strict: true }) + '-' + Date.now();
         
         const blog = await prisma.blog.create({
@@ -98,7 +106,7 @@ export const createBlog = async (req: Request, res: Response): Promise<void> => 
                 category: category || 'General', 
                 author: author || 'Admin', 
                 readTime: readTime || '5 min', 
-                status: Object.values(BlogStatus).includes(status as BlogStatus) ? (status as BlogStatus) : BlogStatus.DRAFT
+                status: validStatus
             },
 
         });
@@ -115,7 +123,17 @@ export const updateBlog = async (req: Request, res: Response): Promise<void> => 
     try {
         const { title, excerpt, content, category, author, readTime, status, featuredImage: providedImageUrl } = req.body;
         
-        const data: any = { title, excerpt, content, category, author, readTime, status };
+        const upperStatus = status ? String(status).toUpperCase() : undefined;
+        let validStatus = undefined;
+        if (upperStatus && Object.values(BlogStatus).includes(upperStatus as BlogStatus)) {
+            validStatus = upperStatus as BlogStatus;
+        }
+
+        const data: any = { title, excerpt, content, category, author, readTime };
+        if (validStatus) {
+            data.status = validStatus;
+        }
+
         if (req.file) {
             data.featuredImage = await uploadBlogImageToS3(req.file);
         } else if (providedImageUrl !== undefined) {

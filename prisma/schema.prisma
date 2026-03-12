@@ -30,7 +30,7 @@ model Job {
 }
 
 model Application {
-  id          String            @id @default(cuid())
+  id          String   @id @default(cuid())
   firstName   String
   lastName    String
   email       String
@@ -39,9 +39,24 @@ model Application {
   portfolio   String?
   resumeUrl   String?
   coverLetter String?
-  createdAt   DateTime          @default(now())
+  createdAt   DateTime @default(now())
   jobId       String
-  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+model Blog {
+  id            String     @id @default(cuid())
+  title         String
+  slug          String     @unique
+  excerpt       String
+  content       String
+  featuredImage String
+  category      String
+  author        String
+  readTime      String
+  status        BlogStatus @default(DRAFT)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 enum JobStatus {
@@ -52,19 +67,4 @@ enum JobStatus {
 enum BlogStatus {
   PUBLISHED
   DRAFT
-}
-
-model Blog {
-  id            String     @id @default(cuid())
-  title         String
-  slug          String     @unique
-  excerpt       String
-  content       String     @db.Text
-  featuredImage String
-  category      String
-  author        String
-  readTime      String
-  status        BlogStatus @default(DRAFT)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
 }
