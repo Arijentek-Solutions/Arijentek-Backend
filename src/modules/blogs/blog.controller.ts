@@ -23,6 +23,17 @@ const sanitizeBlog = async (blog: any) => {
     };
 };
 
+const generateUniqueSlug = async (title: string) => {
+    const base = slugify(title, { lower: true, strict: true });
+    let slug = base;
+    let counter = 1;
+    while (await prisma.blog.findUnique({ where: { slug } })) {
+        slug = `${base}-${counter}`;
+        counter++;
+    }
+    return slug;
+};
+
 
 export const getBlogs = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -94,7 +105,7 @@ export const createBlog = async (req: Request, res: Response): Promise<void> => 
             ? (upperStatus as BlogStatus) 
             : BlogStatus.DRAFT;
 
-        const slug = slugify(title, { lower: true, strict: true }) + '-' + Date.now();
+        const slug = await generateUniqueSlug(title);
         
         const blog = await prisma.blog.create({
             data: { 
